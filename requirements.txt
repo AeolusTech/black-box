@@ -1,0 +1,2 @@
+zeroless==1.0.0
+pyzmq==22.0.3
