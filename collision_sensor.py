@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+import sys
 import time
 from grove.gpio import GPIO
 
 
 class GroveCollisionSensor(GPIO):
     def __init__(self, pin):
+        print(sys._getframe().f_lineno)
         super(GroveCollisionSensor, self).__init__(pin, GPIO.IN)
         self._last_time = time.time()
 
@@ -54,23 +57,17 @@ class GroveCollisionSensor(GPIO):
 Grove = GroveCollisionSensor
 
 
-def main():
-    import sys
 
-    if len(sys.argv) < 2:
-        print('Usage: {} pin'.format(sys.argv[0]))
-        sys.exit(1)
+button = GroveCollisionSensor(3) # conected to D3 so type 3 as a parameter
 
-    button = GroveCollisionSensor(int(sys.argv[1]))
+def on_collision(t):
+    print('Collision')
 
-    def on_collision(t):
-        print('Collision')
+def on_NoCollision(t):
+    print("No Collision")
 
-    def on_NoCollision(t):
-        print("No Collision")
+button.on_collision = on_collision
+button.on_NoCollision = on_NoCollision
 
-    button.on_collision = on_collision
-    # button.on_NoCollision = on_NoCollision
-
-    while True:
-        time.sleep(1)
+while True:
+    time.sleep(1)
