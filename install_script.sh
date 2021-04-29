@@ -17,4 +17,3 @@ cd grove.py
 sudo pip install .
 cd ../BlackBox
 sudo pip install -r requirements.txt
-sudo cp waveshare-gsm-gps.rules /etc/udev/rules.d/

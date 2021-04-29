@@ -1,4 +1,4 @@
-zeroless==1.0.0
+serzeroless==1.0.0
 pyzmq==22.0.3
 grove.py==0.6
 mpu9250-jmdev==1.0.12
@@ -7,6 +7,7 @@ grovepi==1.0.4
 numpy==1.16.2
 smbus-cffi==0.5.1
 RPi.GPIO==0.7.0
-pyserial==3.4
+pyserial==3.4 # not serial module!!!
 scipy==1.6.2
 bmp280==0.0.3
+gsmHat==0.4.2

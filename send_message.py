@@ -3,7 +3,7 @@
 import serial
 import time
 ser = serial.Serial("/dev/ttyS0", 115200)
-W_buff = ["AT\r\n", "AT+CMGF=1\r\n", "AT+CSCA=\"+48224908078\"\r\n", "AT+CMGS=\"512213012\"\r\n", "helloworld"]
+W_buff = ["AT\r\n", "AT+CMGF=1\r\n", "AT+CSCA=\"+48790998250\"\r\n", "AT+CMGS=\"535453458\"\r\n", "Jak latasz tym samolotem ty luju, kurwa?!"]
 ser.write(W_buff[0].encode())
 ser.flushInput()
 data = ""
@@ -28,6 +28,6 @@ try:
 				ser.write("\x1a\r\n".encode())# 0x1a : send   0x1b : Cancel send
 			num =num +1
 			data = ""
-except keyboardInterrupt:
+except KeyboardInterrupt:
 	if ser != None:
 		ser.close()
