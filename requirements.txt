@@ -11,3 +11,4 @@ pyserial==3.4 # not serial module!!!
 scipy==1.6.2
 bmp280==0.0.3
 gsmHat==0.4.2
+usim800==0.0.7
