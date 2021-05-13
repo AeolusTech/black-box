@@ -7,7 +7,7 @@ import time
 
 # following this shit https://exploreembedded.com/wiki/Setting_up_GPRS_with_SIM800L
 
-ser = serial.Serial("/dev/ttyS0", 115200)
+ser = serial.Serial("/dev/ttyS0", 460800)
 W_buff = ["AT\r\n",
           "AT+CFUN=1\r\n",
           "AT+CPIN?\r\n",
