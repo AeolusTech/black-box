@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from random import uniform, randint
+from datetime import datetime
 import csv
 
 
@@ -9,10 +10,11 @@ IMU_Hz_rate = 10
 
 
 def get_single_protocol_frame():
+    timestamp = [datetime.now().isoformat()]
     IMU_list = [str(uniform(-9, 9))[:5] for i in range(6)]
     gps_list = [str(uniform(-128, 128))[:10] for i in range(2)]
     collision = [randint(0, 1)]
-    return IMU_list + gps_list + collision
+    return timestamp + IMU_list + gps_list + collision
 
 
 with open("protocol_example_3_hours_of_flight.txt", 'w') as csvfile:

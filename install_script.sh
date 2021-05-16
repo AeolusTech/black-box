@@ -1,8 +1,7 @@
 #!/bin/sh
 
-
 sudo apt-get update && sudo apt-get upgrade -y -q
-sudo apt-get install -y -q build-essential vim
+sudo apt-get install -y -q build-essential vim lz4
 ssh-keygen -t rsa -b 4096
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2

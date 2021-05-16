@@ -1,2 +1,31 @@
-gyro_x;gyro_y;gyro_z;acc_x;acc_y;acc_z;gps_lat;gps_long;collission
--0.12;-0.12;-0.12;-0.12;-0.12;-0.12;-128.12345;-128.12345;1
+timestamp:gyro_x;gyro_y;gyro_z;acc_x;acc_y;acc_z;gps_lat;gps_long;collission
+2021-05-16T13:33:02.756839:-0.12;-0.12;-0.12;-0.12;-0.12;-0.12;-128.12345;-128.12345;1
+
+
+
+pi@raspberrypi:~/BlackBox/test_files $ time lzma -ke protocol_example_3_hours_of_flight.txt
+
+real    1m20.259s
+user    1m18.733s
+sys     0m0.958s
+
+pi@raspberrypi:~/BlackBox/test_files $ time lz4 -k -9 protocol_example_3_hours_of_flight.txt
+Compressed filename will be : protocol_example_3_hours_of_flight.txt.lz4
+protocol_example_3_hours_of_flight.txt.lz4 already exists; do you wish to overwrite (y/N) ? y
+Compressed 9504000 bytes into 4360686 bytes ==> 45.88%
+
+real    0m18.188s
+user    0m16.904s
+sys     0m0.200s
+
+pi@raspberrypi:~/BlackBox/test_files $ time xz -kz protocol_example_3_hours_of_flight.txt
+
+real    1m21.499s
+user    1m20.467s
+sys     0m0.650s
+
+
+9.1M -rw-r--r-- 1 pi pi 9.1M May 16 13:36 protocol_example_3_hours_of_flight.txt
+4.2M -rw-r--r-- 1 pi pi 4.2M May 16 13:36 protocol_example_3_hours_of_flight.txt.lz4
+2.7M -rw-r--r-- 1 pi pi 2.7M May 16 13:36 protocol_example_3_hours_of_flight.txt.lzma
+2.7M -rw-r--r-- 1 pi pi 2.7M May 16 13:36 protocol_example_3_hours_of_flight.txt.xz

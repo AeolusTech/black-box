@@ -54,17 +54,16 @@ class GroveCollisionSensor(GPIO):
                 self._on_NoCollision(dt)
 
 
-Grove = GroveCollisionSensor
+button = GroveCollisionSensor(3)  # conected to D3 so type 3 as a parameter
 
-
-
-button = GroveCollisionSensor(3) # conected to D3 so type 3 as a parameter
 
 def on_collision(t):
     print('Collision')
 
+
 def on_NoCollision(t):
     print("No Collision")
+
 
 button.on_collision = on_collision
 button.on_NoCollision = on_NoCollision
