@@ -2,6 +2,7 @@
 from zeroless import Client
 from IMU import IMU
 from collision_sensor import CollisionSensor
+from waveshare import Waveshare
 from threading import Thread
 
 
@@ -17,6 +18,8 @@ topics_to_listen = [
     b'mag_z',
     b'master_temp',
     b'collision_sensor',
+    b'gps_lat',
+    b'gps_long',
 ]
 
 imu = IMU()
@@ -24,6 +27,9 @@ thread_imu = Thread(target=imu.run)
 
 collision_sensor = CollisionSensor()
 thread_collision_sensor = Thread(target=collision_sensor.run)
+
+waveshare = Waveshare()
+thread_waveshare = Thread(target=waveshare.run)
 
 
 def get_initialized_client():
@@ -38,8 +44,9 @@ def run_devices_threads():
     try:
         thread_imu.start()
         thread_collision_sensor.start()
+        thread_waveshare.start()
     except:
-        print("Error: unable to start IMU thread")
+        print("Error: unable to start some of the threads")
 
 
 def main():
@@ -57,7 +64,9 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         imu.stop()
-        thread_imu.join()
-
         collision_sensor.stop()
+        waveshare.stop()
+
+        thread_imu.join()
         thread_collision_sensor.join()
+        thread_waveshare.join()
