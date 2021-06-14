@@ -59,3 +59,8 @@ class IMU:
                 self.publishers[i](str(data).encode())
 
             time.sleep(1)
+
+
+if __name__ == '__main__':
+    imu = IMU()
+    imu.run()

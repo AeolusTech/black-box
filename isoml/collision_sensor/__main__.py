@@ -84,3 +84,8 @@ class CollisionSensor():
             self.publisher(str(self.data).encode())
 
             time.sleep(1)
+
+
+if __name__ == '__main__':
+    collision_sensor = CollisionSensor()
+    collision_sensor.run()

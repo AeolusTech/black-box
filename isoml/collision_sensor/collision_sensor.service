@@ -1,0 +1,13 @@
+[Unit]
+Description=Collision sensor unit
+After=isoml.service
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/usr/bin/env python /home/pi/BlackBox/isoml/collision_sensor
+
+[Install]
+WantedBy=multi-user.target

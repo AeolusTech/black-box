@@ -89,3 +89,8 @@ class Waveshare:
                         self.ser.write(W_buff[4].encode())
                     data = ""
             time.sleep(1)
+
+
+if __name__ == '__main__':
+    waveshare = Waveshare()
+    waveshare.run()
