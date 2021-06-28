@@ -1,10 +1,8 @@
 serzeroless==1.0.0
 pyzmq==22.0.3
-grove.py==0.6
 mpu9250-jmdev==1.0.12
 smbus2==0.3.0
-grovepi==1.0.4
-numpy==1.16.2
+numpy==1.16.6
 smbus-cffi==0.5.1
 RPi.GPIO==0.7.0
 pyserial==3.4 # not serial module!!!
