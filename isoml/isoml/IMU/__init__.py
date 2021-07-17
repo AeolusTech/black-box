@@ -1,8 +1,6 @@
-import time
 from mpu9250_jmdev.registers import *
 from mpu9250_jmdev.mpu_9250 import MPU9250
 import bmp280
-from zeroless import Server
 
 try:
     from smbus2 import SMBus
@@ -30,15 +28,7 @@ class IMU:
         self.mpu.configure()  # Apply the settings to the registers.
 
         all_data_labels = self.mpu.getAllDataLabels()
-        filtered_data_labels = self.__filter_redundant_data__(all_data_labels)
-        self.publishers = []
-        i = 0
-        for data_label in filtered_data_labels:
-            self.publishers.append(Server(port=12345+i).pub(
-                topic=data_label.encode(), embed_topic=True))
-            i = i+1
-
-        time.sleep(1)
+        self.filtered_data_labels = self.__filter_redundant_data__(all_data_labels)
 
     def __filter_redundant_data__(self, data_array):
         master_acc = data_array[1:4]
@@ -47,20 +37,14 @@ class IMU:
         temperature = data_array[16:17]
         return master_acc + master_gyro + magnetometer + temperature
 
-    def stop(self):
-        self.keeprunning = False
+    def get_labels(self):
+        return self.filtered_data_labels
 
-    def run(self):
-        while self.keeprunning:
-            all_data = self.mpu.getAllData()
-            filtered_data = self.__filter_redundant_data__(all_data)
-            for i in range(len(filtered_data)):
-                data = filtered_data[i]
-                self.publishers[i](str(data).encode())
+    def get_data(self):
+        all_data = self.mpu.getAllData()
+        filtered_data = self.__filter_redundant_data__(all_data)
+        data = []
+        for i in range(len(filtered_data)):
+            data.append(filtered_data[i])
+        return data
 
-            time.sleep(1)
-
-
-if __name__ == '__main__':
-    imu = IMU()
-    imu.run()

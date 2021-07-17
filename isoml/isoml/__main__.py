@@ -1,39 +1,40 @@
 #!/usr/bin/env python3
-from zeroless import Client
+import csv
+import collision_sensor
+import IMU
+import time
+import vibration_module
+from helpers import *
 
+imu = IMU.IMU()
 
-topics_to_listen = [
-    b'master_acc_x',
-    b'master_acc_y',
-    b'master_acc_z',
-    b'master_gyro_x',
-    b'master_gyro_y',
-    b'master_gyro_z',
-    b'mag_x',
-    b'mag_y',
-    b'mag_z',
-    b'master_temp',
-    b'collision_sensor',
-    b'gps_lat',
-    b'gps_long',
-]
-
-
-def get_initialized_client():
-    client = Client()
-    for i in range(len(topics_to_listen)):
-        client.connect_local(port=12345 + i)
-
-    return client
+data_header = [
+    "timestamp",
+    "vibration1",
+    "vibration2",
+    "vibration3",
+    
+] + imu.get_labels()
 
 
 def main():
-    client = get_initialized_client()
+    frequency = Config.instance().get_isoml_frequency()
+    filename = Config.instance().get_new_output_filename_with_timestamp()
 
-    listen_for_pub = client.sub(topics=topics_to_listen)
+    with open(filename, 'w', newline='') as csvfile:
+        logger = csv.writer(csvfile, delimiter=',')
 
-    for topic, msg in listen_for_pub:
-        print(topic, ': ', msg)
+        logger.writerow(data_header)
+        
+        while True:
+            timestamp_utc = [get_utc_time_iso()]
+            vibrations = vibration_module.read_sensors()
+            collision = [collision_sensor.read_sensor()]
+            imu_data = imu.get_data()
+
+            data = timestamp_utc + vibrations + collision + imu_data
+            logger.writerow(data)
+            time.sleep(1.0 / frequency)
 
 
 if __name__ == '__main__':
