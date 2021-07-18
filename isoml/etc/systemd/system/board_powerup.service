@@ -1,0 +1,14 @@
+[Unit]
+Description=Use Rpi GPIO to turn on waveshare module
+StartLimitIntervalSec=1
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=pi
+ExecStart=/usr/bin/env python /home/pi/BlackBox/PoCs/GSM_PWRKEY.py
+ExecStop=/usr/bin/env python /home/pi/BlackBox/PoCs/GSM_PWRKEY.py
+
+
+[Install]
+WantedBy=multi-user.target

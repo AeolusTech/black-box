@@ -1,3 +1,8 @@
 #!/bin/sh
 
-systemctl status isoml
+services=$(ls etc/systemd/system/)
+
+for service in $services
+do
+    systemctl status $service
+done

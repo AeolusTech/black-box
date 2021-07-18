@@ -1,0 +1,7 @@
+curl --interface ppp0 -XPUT -H "Content-Type: application/json" -d '{'user-device': self.data['user-device'], "timestamp": 21:37, "file": "sciezka/na/blackbox", "flight_id": "666", "end_flight_date": "$(date)", "start_flight_date": "blabla", "notifications_no": "69"}' "https://vwnspfkld9.execute-api.us-east-1.amazonaws.com/dev"
+
+
+
+curl --interface ppp0  -X -H "Content-Type: application/json" -XPOST -d "{ \"user\": \"blackBox\", \"msg\": \"Witaj swiecie GSM\" }" https://vwnspfkld9.execute-api.us-east-1.amazonaws.com/dev
+
+curl "https://vwnspfkld9.execute-api.us-east-1.amazonaws.com/dev"

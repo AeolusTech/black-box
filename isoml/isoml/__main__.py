@@ -21,10 +21,13 @@ def main():
     frequency = Config.instance().get_isoml_frequency()
     filename = Config.instance().get_new_output_filename_with_timestamp()
 
+    print(f"Starting to log flight data to: {filename}")
+
     with open(filename, 'w', newline='') as csvfile:
         logger = csv.writer(csvfile, delimiter=',')
 
         logger.writerow(data_header)
+        print(f"Column data is: {data_header}")
         
         while True:
             timestamp_utc = [get_utc_time_iso()]

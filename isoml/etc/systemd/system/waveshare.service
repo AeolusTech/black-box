@@ -1,0 +1,16 @@
+[Unit]
+Description=Use ppp as your network interface
+Requires=board_powerup.service configure_waveshare_baudrate.service
+StartLimitIntervalSec=1
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=pon ppp_connection
+ExecStop=poff ppp_connection
+
+
+[Install]
+WantedBy=multi-user.target

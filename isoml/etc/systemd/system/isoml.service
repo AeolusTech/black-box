@@ -1,6 +1,5 @@
 [Unit]
 Description=Main ISOML application. Inteligenty System Optymalizacji i Monitorowania Lotu
-After=isoml.service
 StartLimitIntervalSec=0
 [Service]
 Type=simple

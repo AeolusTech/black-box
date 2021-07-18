@@ -1,6 +1,3 @@
-
-from zeroless import Server
-import RPi.GPIO as GPIO
 import time
 import serial
 
@@ -13,13 +10,7 @@ class Waveshare:
     keeprunning = True
 
     def __init__(self):
-        self.__turn_on__()
         self.__increase_UART_speed__()
-
-        self.publishers_lat = Server(port=12346).pub(
-            topic=data_label.encode(), embed_topic=True)
-        self.publishers_long = Server(port=12347).pub(
-            topic=data_label.encode(), embed_topic=True)
 
         time.sleep(1)
 
@@ -31,17 +22,6 @@ class Waveshare:
     def __del__(self):
         if self.ser != None:
             self.ser.close()
-
-    def __turn_on__(self):
-        GPIO.setmode(GPIO.BOARD)
-
-        GPIO.setup(7, GPIO.OUT)
-
-        GPIO.output(7, GPIO.LOW)
-        time.sleep(1)
-        GPIO.output(7, GPIO.HIGH)
-
-        GPIO.cleanup()
 
     def __increase_UART_speed__(self):
         slow_ser = serial.Serial("/dev/ttyS0", 115200)
@@ -74,8 +54,8 @@ class Waveshare:
                 print("Initializing")
                 time.sleep(0.5)
             else:
-                while ser.inWaiting() > 0:
-                    data += ser.read(ser.inWaiting()).decode()
+                while self.ser.inWaiting() > 0:
+                    data += self.ser.read(self.ser.inWaiting()).decode()
 
                 if data != "":
                     print(data)

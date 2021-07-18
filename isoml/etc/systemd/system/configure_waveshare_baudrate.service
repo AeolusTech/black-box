@@ -1,0 +1,14 @@
+[Unit]
+Description=Use faster baud rate with waveshare
+Requires=board_powerup.service
+StartLimitIntervalSec=1
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=pi
+ExecStart=/usr/bin/env python /home/pi/BlackBox/PoCs/increase_uart_baudrate.py
+
+
+[Install]
+WantedBy=multi-user.target

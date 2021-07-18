@@ -1,3 +1,8 @@
 #!/bin/sh
 
-sudo systemctl stop isoml
+services=$(ls etc/systemd/system/)
+
+for service in $services
+do
+    sudo systemctl stop $service
+done

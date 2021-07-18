@@ -1,3 +1,8 @@
 #!/bin/sh
 
-sudo systemctl start isoml
+services=$(ls etc/systemd/system/)
+
+for service in $services
+do
+    sudo systemctl start $service
+done

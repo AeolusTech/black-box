@@ -1,4 +1,12 @@
 #!/bin/sh
 
-sudo cp ./isoml/isoml.service /etc/systemd/system/
-sudo cp ./isoml.conf /etc/
+set -x
+
+sudo cp etc/* /etc/ -R
+
+services=$(ls etc/systemd/system/)
+
+for service in $services
+do
+    sudo systemctl --now enable $service
+done
