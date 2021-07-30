@@ -8,5 +8,11 @@ services=$(ls etc/systemd/system/)
 
 for service in $services
 do
-    sudo systemctl --now enable $service
+    sudo systemctl enable $service
+done
+
+
+for service in $services
+do
+    sudo systemctl start $service
 done

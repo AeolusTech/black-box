@@ -1,6 +1,6 @@
 [Unit]
 Description=Use faster baud rate with waveshare
-Requires=board_powerup.service
+Requires=board_powerup.service hack_the_ttyS0.service
 StartLimitIntervalSec=1
 
 [Service]

@@ -23,7 +23,7 @@ def increase_speed():
 				time.sleep(1)
 				ser.write(W_buff[num+1].encode())
 
-			num =num +1
+			num =num + 1
 			data = ""
 
 
