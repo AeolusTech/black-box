@@ -30,10 +30,10 @@ def increase_speed():
 try:
 	increase_speed()
 except UnicodeDecodeError:
-	print("UART already set to 460800")
+	print("UART already set to 115200")
 	pass
 except timeout_decorator.timeout_decorator.TimeoutError:
-	print("UART increased to 460800")
+	print("UART increased to 115200")
 finally:
 	if ser != None:
 		ser.close()

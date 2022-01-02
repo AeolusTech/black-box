@@ -14,7 +14,7 @@ class Waveshare:
 
         time.sleep(1)
 
-        self.ser = serial.Serial("/dev/ttyS0", 460800)
+        self.ser = serial.Serial("/dev/ttyS0", 115200)
 
         self.ser.write(b"AT+CGNSPWR=1\r\n")
         self.ser.flushInput()
@@ -37,7 +37,7 @@ class Waveshare:
                 print(data)
             if num < 1:
                 time.sleep(1)
-                slow_ser.write(b"AT+IPR=460800\r\n")
+                slow_ser.write(b"AT+IPR=115200\r\n")
                 break
 
             num = num + 1

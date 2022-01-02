@@ -7,7 +7,7 @@ import logging
 
 AT = {
     "device_ok": b"AT\r\n",
-    "set_fast_uart": b"AT+IPR=460800\r\n",
+    "set_fast_uart": b"AT+IPR=115200\r\n",
     "set_slow_uart": b"AT+IPR=115200\r\n",
 }
 
@@ -20,10 +20,10 @@ class MySerial(object):
             self.__request_faster_uart__()
 
         self.fast_serial = serial.Serial(
-            port=self.port, baudrate=460800, timeout=0.0)
+            port=self.port, baudrate=115200, timeout=0.0)
 
         if not self.__check_fast_communication__():
-            raise Exception('Waveshare UART not working at 460800')
+            raise Exception('Waveshare UART not working at 115200')
 
     def __enter__(self):
         return self.fast_serial

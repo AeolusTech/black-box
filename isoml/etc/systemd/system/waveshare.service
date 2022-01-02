@@ -1,6 +1,6 @@
 [Unit]
 Description=Use ppp as your network interface
-Requires=board_powerup.service configure_waveshare_baudrate.service
+Requires=board_powerup.service
 StartLimitIntervalSec=1
 
 [Service]

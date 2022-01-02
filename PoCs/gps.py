@@ -2,7 +2,9 @@
 # Filename: text.py
 import serial
 import time
-ser = serial.Serial("/dev/ttyS0",460800)
+import os
+
+ser = serial.Serial("/dev/ttyS0",115200)
 
 W_buff = ["AT+CGNSPWR=1\r\n", "AT+CGNSSEQ=\"RMC\"\r\n",
           "AT+CGNSINF\r\n", "AT+CGNSURC=2\r\n", "AT+CGNSTST=1\r\n"]
@@ -29,6 +31,8 @@ try:
 				if num == 4:
 					time.sleep(0.5)
 					ser.write(W_buff[4].encode())
+				if num > 4:
+					os.system('clear')
 				data = ""
 except keyboardInterrupt:
 	if ser != None:

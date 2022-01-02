@@ -2,7 +2,7 @@
 # Filename: text.py
 import serial
 import time
-ser = serial.Serial("/dev/ttyS0", 460800)
+ser = serial.Serial("/dev/ttyS0", 115200)
 
 W_buf_logoin = "AT+CREG?\r\n"
 W_buf_phone = "ATD512213012;\r\n"

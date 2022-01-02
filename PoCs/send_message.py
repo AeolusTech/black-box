@@ -2,7 +2,7 @@
 # Filename: text.py
 import serial
 import time
-ser = serial.Serial("/dev/ttyS0", 460800)
+ser = serial.Serial("/dev/ttyS0", 115200)
 W_buff = ["AT\r\n", "AT+CMGF=1\r\n", "AT+CSCA=\"+48790998250\"\r\n",
           "AT+CMGS=\"512213012\"\r\n", "Jak latasz tym samolotem ty luju, kurwa?!"]
 ser.write(W_buff[0].encode())
