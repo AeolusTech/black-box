@@ -15,6 +15,7 @@ data_header = [
     "vibration1",
     "vibration2",
     "vibration3",
+    "collision"
     
 ] + imu.get_labels() + gps_thread.get_labels()
 

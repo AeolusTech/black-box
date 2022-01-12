@@ -24,6 +24,6 @@ try:
                 print("call phone")
                 ser.write(W_buf_phone.encode())
             data = ""
-except keyboardInterrupt:
+except KeyboardInterrupt:
     if ser != None:
         ser.close()
