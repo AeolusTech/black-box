@@ -31,20 +31,14 @@ import time
 #  RMC – Recommended Minimum Specific GNSS Data
 
 
-ser = serial.Serial("/dev/ttyS0",115200)
+ser = serial.Serial("/dev/ttyS0", baudrate=115200)
 
-W_buff = ["AT+CGNSPWR=0\r\n", # power off GNSS
-		  "AT+CGNSPWR=1\r\n", # power on GNSS
-		  "AT+CGNSSEQ=\"GGA\"\r\n", # define the last NMEA sentence that parsed
-		  # NMEA - National Marine Electronics Association
-		  # GGA - Global Positioning System Fix Data
-		  # GSA - GNSS DOP and Active Satellites
-		  # GSV - GNSS Satellites in View
-		  # RMC - Recommended Minimum Specific GNSS Data
-          "AT+CGNSINF\r\n", # read GNSS navigation information
-		  "AT+CGNSURC=0\r\n", # set Unsolicited Result Code reporting every 2 GNSS fix 
-		  "AT+CGNSTST=1\r\n" # send NMEA data to AT UART
-		]
+W_buff = [
+"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",  # Set bearer parameter
+"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",   # Set bearer context
+"AT+SAPBR=1,1",                           # Active bearer context
+"AT+SAPBR=2,1"							  # Read bearer parameter
+]
 
 GGA_LAT_INDEX = 2
 GGA_NORTH_SOUTH_HEMISPEHERE = 3
@@ -68,8 +62,8 @@ def parse_and_return_lat_long(data):
 	split_data = data.split(',')
 	lat_nmea_string = split_data[GGA_LAT_INDEX]
 	is_south = split_data[GGA_NORTH_SOUTH_HEMISPEHERE] == 'S'
-	
-	
+
+
 	long_nmea_string = split_data[GGA_LONG_INDEX]
 	is_west = split_data[GGA_EAST_WEST_HEMISPEHERE] == 'W'
 
@@ -80,7 +74,7 @@ def parse_and_return_lat_long(data):
 	if long_nmea_string and lat_nmea_string:
 		latitude = NmeaToDecimal_lat(lat_nmea_string, is_south)
 		longitude = NmeaToDecimal_long(long_nmea_string, is_west)
-	
+
 	return latitude, longitude
 
 
@@ -105,34 +99,26 @@ def NmeaToDecimal_long(long_string, is_west):
 	if is_west:
 		return -1.0 * longitude
 	return longitude
-	
+
+def read_serial() -> str:
+	while (True):
+		if (ser.inWaiting() > 0):
+			data_str = ser.read(ser.inWaiting()).decode('ascii')
+			print(data_str, end='')
+			return data_str
+
+		time.sleep(0.1)  # sleep 100ms
+
+def write_serial(data: str):
+	ser.write(data.encode())
+
 
 try:
-	while True:
-		if ser.inWaiting() == 0:
-			# print ("Initializing")
-			time.sleep(0.5)
-		else:
-			while ser.inWaiting() > 0:
-				data += ser.read(ser.inWaiting()).decode()
-			if data != "":
-				print(data)
-				if  num < data_len:
-					print(num)
-					time.sleep(0.5)
-					ser.write(W_buff[num+1].encode())
-				if num == data_len:
-					time.sleep(0.5)
-					ser.write(W_buff[data_len].encode())
-				if num > data_len:
-					# os.system('clear')
-					if "GGA" in data:
-						latitude, longitude = parse_and_return_lat_long(data)
-						print(f"latitude: {latitude}, longitude: {longitude}")
-					# print(parse_and_return_lat_long(data))
-				data = ""
-				num =num +1
+	for i in range(len(W_buff)):
+		write_serial(W_buff[i])
+		_ = read_serial()
+
 except KeyboardInterrupt:
 	if ser != None:
 		ser.close()
-		
+
