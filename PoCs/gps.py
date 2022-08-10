@@ -167,10 +167,25 @@ async def main(loop):
     reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
     print('Reader and writer created')
     messages = [
-b"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",  # Set bearer parameter
-b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",   # Set bearer context
-b"AT+SAPBR=1,1",                           # Active bearer context
-b"AT+SAPBR=2,1"							  # Read bearer parameter
+b"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",       # Set bearer parameter
+b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",       # Set bearer context
+b"AT+SAPBR=1,1\r\n",                            # Active bearer context
+b"AT+SAPBR=2,1\r\n",							# Read bearer parameter
+b"AT+CNTPCID=1\r\n",                            # Set GPRS Bearer Profile's ID
+b"AT+CNTP=\"0.pl.pool.ntp.org\",1\r\n",         # set NTP server and time zone. they said that 32/4=8 which is Beijing. WTF?!
+b"AT+CNTP?\r\n",                                # read NTP server and timezone
+b"AT+CNTP\r\n",                                 # synchronize time
+b"AT+CCLK?\r\n",                                # read local time
+b"AT+CGNSSAV=3,3\r\n",                          # set HTTP download mode
+b"AT+HTTPINIT\r\n",                          # init HTTP service
+b"AT+HTTPPARA=\"CID\",1\r\n",                          # set parameters for HTTP transmission
+b"AT+HTTPPARA=\"URL\",\"http://wepodownload.mediatek.com/EPO_GPS_3_1.DAT\"\r\n",
+b"AT+HTTPACTION =\"CID\",1\r\n",                          # get session start. Should have 200 in the response
+b"AT+HTTPTERM\r\n",                          # terminate HTTP session
+b"AT+CGNSCHK=3,1\r\n",                          # check EPO size
+b"AT+CGNSPWR=1\r\n",                          # turn on GPS
+b"AT+CGNSAID=31,1,1\r\n",                          # send EPO to GPS
+b"AT+CGNSINF\r\n"                          # read GPS location
 ]
     sent = send(writer, messages)
     received = recv(reader)
@@ -181,7 +196,7 @@ async def send(w, msgs):
     for msg in msgs:
         w.write(msg)
         print(f'sent: {msg.decode().rstrip()}')
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2)
     w.write(b'DONE\n')
     print('Done sending')
 
