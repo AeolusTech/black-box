@@ -4,6 +4,7 @@ numpy==1.16.6
 smbus-cffi==0.5.1
 RPi.GPIO==0.7.0
 pyserial==3.4 # not serial module!!!
+pyserial-asyncio==0.6
 scipy==1.6.2
 bmp280==0.0.3
 gsmHat==0.4.2
