@@ -3,8 +3,14 @@
 import serial
 import time
 ser = serial.Serial("/dev/ttyS0", 115200)
-W_buff = ["AT\r\n", "AT+CMGF=1\r\n", "AT+CSCA=\"+48790998250\"\r\n",
-          "AT+CMGS=\"512213012\"\r\n", "Jak latasz tym samolotem ty luju, kurwa?!"]
+
+W_buff = [
+"AT\r\n", "AT+CMGF=1\r\n",
+"AT+CSCA=\"+48790998250\"\r\n",
+"AT+CMGS=\"512213012\"\r\n",
+"Jak latasz tym samolotem ty luju, kurwa?!"
+
+]
 ser.write(W_buff[0].encode())
 ser.flushInput()
 data = ""
@@ -12,7 +18,7 @@ num = 0
 
 try:
     while True:
-        print("Waiting!")
+#        print("Waiting!")
         # print(ser.inWaiting())
         while ser.inWaiting() > 0:
             data += ser.read(ser.inWaiting()).decode()
