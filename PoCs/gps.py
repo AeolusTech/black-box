@@ -169,6 +169,8 @@ async def main(loop):
     messages = [
 b"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",       # Set bearer parameter
 b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",       # Set bearer context
+b"AT+CREG?\r\n",                                # check GSM
+b"AT+CGREG?\r\n",                               # check 2G
 b"AT+SAPBR=1,1\r\n",                            # Active bearer context
 b"AT+SAPBR=2,1\r\n",							# Read bearer parameter
 b"AT+CNTPCID=1\r\n",                            # Set GPRS Bearer Profile's ID
@@ -192,22 +194,63 @@ b"AT+CGNSINF\r\n"                          # read GPS location
     await asyncio.wait([sent, received])
 
 
+MAX_CGNSINFS_COUNT = 10
+cgnsinf_iterator = 0
+DELAY_AFTER_EACH_MSG_SECONDS = 1
+acknowledged = True
+everything_received = True
+send_iterator = 0
+
+
 async def send(w, msgs):
-    for msg in msgs:
-        w.write(msg)
-        print(f'sent: {msg.decode().rstrip()}')
-        await asyncio.sleep(2)
-    w.write(b'DONE\n')
-    print('Done sending')
+    while True:
+        if everything_received:
+            print('everythiong received')
+            if acknowledged:
+                print('acknowledged')
+                acknowledged = False
+
+
+            msg = msgs[send_iterator]
+
+            w.write(msg)
+            everything_received = False
+            print(f'sent: {msg.decode().rstrip()}')
+
+
+            if send_iterator > len(msgs):
+                print('Done sending')
+                break
+            else:
+                if not send_iterator > len(msgs) + MAX_CGNSINFS_COUNT:
+                    send_iterator = send_iterator + 1
+
+
+        else:
+            print('Not sending, because receiving not finished')
+            await asyncio.sleep(DELAY_AFTER_EACH_MSG_SECONDS)
 
 
 async def recv(r):
     while True:
-        msg = await r.readuntil(b'\n')
-        if msg.rstrip() == b'DONE':
-            print('Done receiving')
-            break
-        print(f'received: {msg.rstrip().decode()}')
+        unstripped_mgs = await r.readuntil(b'\n')
+
+        msg = unstripped_mgs.rstrip()
+
+        if b'CGNSINF' in msg:
+            print('CGNSINF received')
+            cgnsinf_iterator = cgnsinf_iterator + 1
+            if cgnsinf_iterator >= MAX_CGNSINFS_COUNT:
+                print('Done receiving')
+                break
+
+        if b'OK' or b'ERROR' in msg:
+            print('OK or ERROR received')
+            everything_received = True
+            if b'OK' in msg:
+                print('OK received')
+                acknowledged = True
+        print(f'received: {msg.decode()}')
 
 
 loop = asyncio.get_event_loop()
