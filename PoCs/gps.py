@@ -96,77 +96,7 @@ def NmeaToDecimal_long(long_string, is_west):
 port = "/dev/ttyS0"
 baud = 115200
 
-
-# class Writer(asyncio.Protocol):
-#     def connection_made(self, transport):
-#         """Store the serial transport and schedule the task to send data.
-#         """
-#         self.transport = transport
-#         print('Writer connection created')
-#         asyncio.ensure_future(self.send())
-#         print('Writer.send() scheduled')
-
-#     def connection_lost(self, exc):
-#         print('Writer closed')
-
-#     async def send(self):
-#         """Send four newline-terminated messages, one byte at a time.
-#         """
-#         buffer = [
-# "AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",  # Set bearer parameter
-# "AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",   # Set bearer context
-# "AT+SAPBR=1,1",                           # Active bearer context
-# "AT+SAPBR=2,1"							  # Read bearer parameter
-# ]
-#         for message in buffer:
-#             await asyncio.sleep(0.5)
-#             bmessage = message.encode()
-#             self.transport.serial.write(bmessage)
-#             print(f'Writer sent: {bmessage}')
-#         self.transport.close()
-
-
-# class Reader(asyncio.Protocol):
-#     def connection_made(self, transport):
-#         """Store the serial transport and prepare to receive data.
-#         """
-#         self.transport = transport
-#         self.buf = bytes()
-#         self.msgs_recvd = 0
-#         print('Reader connection created')
-
-#     def data_received(self, data):
-#         """Store characters until a newline is received.
-#         """
-#         self.buf += data
-#         if b'\n' in self.buf:
-#             lines = self.buf.split(b'\n')
-#             self.buf = lines[-1]  # whatever was left over
-#             for line in lines[:-1]:
-#                 print(f'Reader received: {line.decode()}')
-#                 self.msgs_recvd += 1
-#         if self.msgs_recvd == 4:
-#             self.transport.close()
-
-#     def connection_lost(self, exc):
-#         print('Reader closed')
-
-
-# loop = asyncio.get_event_loop()
-# reader = serial_asyncio.create_serial_connection(loop, Reader, port, baudrate=baud)
-# writer = serial_asyncio.create_serial_connection(loop, Writer, port, baudrate=baud)
-# asyncio.ensure_future(reader)
-# print('Reader scheduled')
-# asyncio.ensure_future(writer)
-# print('Writer scheduled')
-# loop.call_later(10, loop.stop)
-# loop.run_forever()
-# print('Done')
-
-async def main(loop):
-    reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
-    print('Reader and writer created')
-    messages = [
+messages = [
 b"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",       # Set bearer parameter
 b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",       # Set bearer context
 b"AT+SAPBR=1,1\r\n",                            # Active bearer context
@@ -187,29 +117,74 @@ b"AT+CGNSPWR=1\r\n",                          # turn on GPS
 b"AT+CGNSAID=31,1,1\r\n",                          # send EPO to GPS
 b"AT+CGNSINF\r\n"                          # read GPS location
 ]
-    sent = send(writer, messages)
-    received = recv(reader)
-    await asyncio.wait([sent, received])
+
+sleeps = [
+2,
+20,
+2,
+5,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2,
+2
+]
 
 
-async def send(w, msgs):
-    for msg in msgs:
-        w.write(msg)
-        print(f'sent: {msg.decode().rstrip()}')
-        await asyncio.sleep(2)
-    w.write(b'DONE\n')
+
+assert len(messages) == len(sleeps)
+
+
+async def main():
+    asyncState = type('', (), {})()
+    asyncState.should_send = 1
+    asyncState.counter = 0
+    reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
+    print('Reader and writer created')
+    sent = send(writer, asyncState)
+    received = recv(reader, asyncState)
+    await asyncio.gather(sent, received)
+
+
+async def send(w, asyncState):
+    while True:
+        if asyncState.should_send == 1:
+            counter = asyncState.counter
+            msg = messages[counter]
+            single_sleep = sleeps[counter]
+
+            w.write(msg)
+            asyncState.should_send = 0
+            if counter >= len(messages):
+                break
+            print(f'sent: {msg.decode().rstrip()}')
+            await asyncio.sleep(single_sleep)
+        w.write(b'DONE\n')
     print('Done sending')
 
 
-async def recv(r):
+async def recv(r, asyncState):
     while True:
         msg = await r.readuntil(b'\n')
         if msg.rstrip() == b'DONE':
             print('Done receiving')
             break
         print(f'received: {msg.rstrip().decode()}')
+        asyncState.should_send = 1
+        asyncState.counter = asyncState.counter + 1
+
 
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main(loop))
+loop.run_until_complete(main())
 loop.close()
