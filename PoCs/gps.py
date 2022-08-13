@@ -102,7 +102,7 @@ b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",       # Set bearer context
 b"AT+SAPBR=1,1\r\n",                            # Active bearer context
 b"AT+SAPBR=2,1\r\n",							# Read bearer parameter
 b"AT+CNTPCID=1\r\n",                            # Set GPRS Bearer Profile's ID
-b"AT+CNTP=\"0.pl.pool.ntp.org\",1\r\n",         # set NTP server and time zone. they said that 32/4=8 which is Beijing. WTF?!
+b"AT+CNTP=\"0.pl.pool.ntp.org\",8\r\n",         # set NTP server and time zone. they said that 32/4=8 which is Beijing (GMT+8)
 b"AT+CNTP?\r\n",                                # read NTP server and timezone
 b"AT+CNTP\r\n",                                 # synchronize time
 b"AT+CCLK?\r\n",                                # read local time
@@ -120,24 +120,24 @@ b"AT+CGNSINF\r\n"                          # read GPS location
 
 sleeps = [
 2,
+3,
 20,
-2,
 5,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2,
-2
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5
 ]
 
 
@@ -147,8 +147,10 @@ assert len(messages) == len(sleeps)
 
 async def main():
     asyncState = type('', (), {})()
-    asyncState.should_send = 1
+    asyncState.acknowledged = True
+    asyncState.receiving_finished = True
     asyncState.counter = 0
+
     reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
     print('Reader and writer created')
     sent = send(writer, asyncState)
@@ -158,30 +160,38 @@ async def main():
 
 async def send(w, asyncState):
     while True:
-        if asyncState.should_send == 1:
+        if asyncState.receiving_finished:
+            if asyncState.acknowledged:
+                asyncState.acknowledged = False
+
             counter = asyncState.counter
             msg = messages[counter]
             single_sleep = sleeps[counter]
 
             w.write(msg)
-            asyncState.should_send = 0
+            asyncState.receiving_finished = False
             if counter >= len(messages):
                 break
-            print(f'sent: {msg.decode().rstrip()}')
+            print(f'sent{counter}: {msg.decode().rstrip()}')
             await asyncio.sleep(single_sleep)
-        w.write(b'DONE\n')
+    w.write(b'DONE\n')
     print('Done sending')
 
 
 async def recv(r, asyncState):
     while True:
         msg = await r.readuntil(b'\n')
-        if msg.rstrip() == b'DONE':
+        msg_rstripped = msg.rstrip()
+
+        if msg_rstripped == b'DONE':
             print('Done receiving')
             break
-        print(f'received: {msg.rstrip().decode()}')
-        asyncState.should_send = 1
-        asyncState.counter = asyncState.counter + 1
+        print(f'received{asyncState.counter}: {msg_rstripped.decode()}')
+        if b'OK' in msg_rstripped or b'ERROR' in msg_rstripped:
+            asyncState.receiving_finished = True
+            if b'OK' in msg_rstripped:
+                asyncState.acknowledged = True
+                asyncState.counter = asyncState.counter + 1
 
 
 
