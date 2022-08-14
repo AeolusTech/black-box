@@ -115,7 +115,16 @@ b"AT+HTTPTERM\r\n",                             # terminate HTTP session
 b"AT+CGNSCHK=3,1\r\n",                          # check EPO size
 b"AT+CGNSPWR=1\r\n",                            # turn on GPS
 b"AT+CGNSAID=31,1,1\r\n",                       # send EPO to GPS
-b"AT+CGNSINF\r\n"                               # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
 ]
 
 sleeps = [
@@ -137,18 +146,33 @@ sleeps = [
 5,
 5,
 5,
-5
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
 ]
 
 
+len_msg = len(messages)
+len_sleeps = len(sleeps)
 
-assert len(messages) == len(sleeps)
+if len_msg != len_sleeps:
+    print(f'len(messages) = {len_msg}')
+    print(f'len(sleeps) = {len_sleeps}')
+    exit(1)
 
 
 async def main():
     asyncState = type('', (), {})()
     asyncState.acknowledged = True
     asyncState.receiving_finished = True
+    asyncState.done_sending = False
     asyncState.counter = 0
 
     reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
@@ -163,6 +187,7 @@ async def send(w, asyncState):
         if asyncState.receiving_finished:
             counter = asyncState.counter
             if counter >= len(messages):
+                asyncState.done_sending = True
                 break
             if asyncState.acknowledged:
                 asyncState.acknowledged = False
@@ -175,7 +200,6 @@ async def send(w, asyncState):
 
             print(f'sent{counter}: {msg.decode().rstrip()}')
             await asyncio.sleep(single_sleep)
-    w.write(b'DONE\n')
     print('Done sending')
 
 
@@ -184,8 +208,7 @@ async def recv(r, asyncState):
         msg = await r.readuntil(b'\n')
         msg_rstripped = msg.rstrip()
 
-        if msg_rstripped == b'DONE':
-            print('Done receiving')
+        if asyncState.done_sending == True:
             break
         print(f'received{asyncState.counter}: {msg_rstripped.decode()}')
         if b'OK' in msg_rstripped or b'ERROR' in msg_rstripped:
@@ -193,6 +216,7 @@ async def recv(r, asyncState):
             if b'OK' in msg_rstripped:
                 asyncState.acknowledged = True
                 asyncState.counter = asyncState.counter + 1
+    print('Done receiving')
 
 
 
