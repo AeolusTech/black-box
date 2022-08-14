@@ -107,15 +107,15 @@ b"AT+CNTP?\r\n",                                # read NTP server and timezone
 b"AT+CNTP\r\n",                                 # synchronize time
 b"AT+CCLK?\r\n",                                # read local time
 b"AT+CGNSSAV=3,3\r\n",                          # set HTTP download mode
-b"AT+HTTPINIT\r\n",                          # init HTTP service
-b"AT+HTTPPARA=\"CID\",1\r\n",                          # set parameters for HTTP transmission
+b"AT+HTTPINIT\r\n",                             # init HTTP service
+b"AT+HTTPPARA=\"CID\",1\r\n",                   # set parameters for HTTP transmission
 b"AT+HTTPPARA=\"URL\",\"http://wepodownload.mediatek.com/EPO_GPS_3_1.DAT\"\r\n",
-b"AT+HTTPACTION =\"CID\",1\r\n",                          # get session start. Should have 200 in the response
-b"AT+HTTPTERM\r\n",                          # terminate HTTP session
+b"AT+HTTPACTION =0\r\n",                        # get session start. Should have 200 in the response
+b"AT+HTTPTERM\r\n",                             # terminate HTTP session
 b"AT+CGNSCHK=3,1\r\n",                          # check EPO size
-b"AT+CGNSPWR=1\r\n",                          # turn on GPS
-b"AT+CGNSAID=31,1,1\r\n",                          # send EPO to GPS
-b"AT+CGNSINF\r\n"                          # read GPS location
+b"AT+CGNSPWR=1\r\n",                            # turn on GPS
+b"AT+CGNSAID=31,1,1\r\n",                       # send EPO to GPS
+b"AT+CGNSINF\r\n"                               # read GPS location
 ]
 
 sleeps = [
@@ -132,7 +132,7 @@ sleeps = [
 5,
 5,
 5,
-5,
+30,
 5,
 5,
 5,
@@ -161,17 +161,18 @@ async def main():
 async def send(w, asyncState):
     while True:
         if asyncState.receiving_finished:
+            counter = asyncState.counter
+            if counter >= len(messages):
+                break
             if asyncState.acknowledged:
                 asyncState.acknowledged = False
 
-            counter = asyncState.counter
             msg = messages[counter]
             single_sleep = sleeps[counter]
 
             w.write(msg)
             asyncState.receiving_finished = False
-            if counter >= len(messages):
-                break
+
             print(f'sent{counter}: {msg.decode().rstrip()}')
             await asyncio.sleep(single_sleep)
     w.write(b'DONE\n')
