@@ -10,3 +10,4 @@ bmp280==0.0.3
 gsmHat==0.4.2
 usim800==0.0.7
 timeout-decorator==0.5.0
+psutil==5.5.1
