@@ -34,7 +34,7 @@ import time
 
 class GPS(threading.Thread):
 	ser = serial.Serial("/dev/ttyS0",115200)
-	
+
 	GGA_LAT_INDEX = 2
 	GGA_NORTH_SOUTH_HEMISPEHERE = 3
 	GGA_LONG_INDEX = 4
@@ -50,11 +50,11 @@ class GPS(threading.Thread):
 		# GSV - GNSS Satellites in View
 		# RMC - Recommended Minimum Specific GNSS Data
 		"AT+CGNSINF\r\n", # read GNSS navigation information
-		"AT+CGNSURC=0\r\n", # set Unsolicited Result Code reporting every 0 GNSS fix 
-		"AT+CGNSTST=1\r\n" # send NMEA data to AT UART
+		"AT+CGNSURC=0\r\n", # set Unsolicited Result Code reporting every 0 GNSS fix
+		"AT+CGNSINF\r\n" # send NMEA data to AT UART
 	]
 
-	
+
 	latitude = 0
 	longitude = 0
 
@@ -63,7 +63,7 @@ class GPS(threading.Thread):
 		threading.Thread.__init__(self)
 		self.ser.write(self.W_buff[0].encode())
 		self.ser.flushInput()
-		
+
 	def run(self):
 		try:
 			data_len = len(self.W_buff) - 1
@@ -84,8 +84,9 @@ class GPS(threading.Thread):
 							time.sleep(0.5)
 							self.ser.write(self.W_buff[data_len].encode())
 						if num > data_len:
-							if "GGA" in data:
-								self.latitude, self.longitude = self.parse_and_return_lat_long(data)
+							self.latitude, self.longitude = self.parse_and_return_lat_long(data)
+							time.sleep(1)
+							self.ser.write(self.W_buff[data_len].encode())
 						data = ""
 						num =num +1
 		finally:
@@ -107,8 +108,8 @@ class GPS(threading.Thread):
 		split_data = data.split(',')
 		lat_nmea_string = split_data[self.GGA_LAT_INDEX]
 		is_south = split_data[self.GGA_NORTH_SOUTH_HEMISPEHERE] == 'S'
-		
-		
+
+
 		long_nmea_string = split_data[self.GGA_LONG_INDEX]
 		is_west = split_data[self.GGA_EAST_WEST_HEMISPEHERE] == 'W'
 
@@ -119,7 +120,7 @@ class GPS(threading.Thread):
 		if long_nmea_string and lat_nmea_string:
 			latitude = self.NmeaToDecimal_lat(lat_nmea_string, is_south)
 			longitude = self.NmeaToDecimal_long(long_nmea_string, is_west)
-		
+
 		return latitude, longitude
 
 

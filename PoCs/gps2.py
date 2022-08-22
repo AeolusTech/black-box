@@ -115,12 +115,27 @@ if __name__ == '__main__':
             elif event.startswith('+CCLK') and self._awaiting_response_for.startswith('AT+CCLK?'):
                 local_date = event.rstrip('"').lstrip('"')
                 self.event_responses.put(local_date)
-            elif event.startswith('+CGNSINF') and self._awaiting_response_for.startswith('AT+CGNSINF?'):
+            elif event.startswith('+CGNSINF'): # and self._awaiting_response_for.startswith('AT+CGNSINF?'):
                 nmea_string = event.lstrip('CGNSINF: ').split(',')
                 LAT_POS = 3
                 LONG_POS = 4
-                lat_long_position = str(nmea_string[LAT_POS], nmea_string[LONG_POS])
-                self.event_responses.put(lat_long_position)
+                if not nmea_string[LAT_POS] or not nmea_string[LONG_POS]:
+                    self.event_responses.put(None)
+                else:
+                    lat_long_position = nmea_string[LAT_POS] + ', ' + nmea_string[LONG_POS]
+                    self.event_responses.put(lat_long_position)
+            elif event.startswith('+CNTP'):
+                pass
+            elif event.startswith('+CGNSCHK'):
+                pass
+            elif event.startswith('+HTTPACTION'):
+                response = event.rstrip('"').lstrip('"')
+                status_code = response.split(',')[1]
+                self.event_responses.put(status_code)
+            elif event.startswith('+CGNSAID'):
+                pass
+            elif event.startswith('+CGNSPWR'):
+                pass
             else:
                 logging.warning('unhandled event: {!r}'.format(event))
 
@@ -184,13 +199,13 @@ if __name__ == '__main__':
         def set_URL_for_HTTP_transmission(self):
             self.command("AT+HTTPPARA=\"URL\",\"http://wepodownload.mediatek.com/EPO_GPS_3_1.DAT\"", response="OK")
 
-        def get_session_started(self):
+        def run_http_get_request(self):
             '''
             Question: maybe it's worth to check for 200 status???
             '''
-            self.command("AT+HTTPACTION=0", response="OK", timeout=20)
+            return self.command_with_event_response("AT+HTTPACTION=0")
 
-        def terminate_HTTP_sesion(self):
+        def terminate_HTTP_session(self):
             self.command("AT+HTTPTERM", response="OK")
 
         def check_EPO_size(self):
@@ -205,6 +220,8 @@ if __name__ == '__main__':
         def get_wgs84_position(self) -> str:
             return self.command_with_event_response("AT+CGNSINF")
 
+
+    start_time = time.time()
 
     port = "/dev/ttyS0"
     baud = 115200
@@ -237,9 +254,9 @@ if __name__ == '__main__':
         time.sleep(1)
         waveshare_module.set_URL_for_HTTP_transmission()
         time.sleep(1)
-        waveshare_module.get_session_started()
+        print(f'Status code is: {waveshare_module.run_http_get_request()}')
         time.sleep(1)
-        waveshare_module.terminate_HTTP_sesion()
+        waveshare_module.terminate_HTTP_session()
         time.sleep(1)
         waveshare_module.check_EPO_size()
         time.sleep(1)
@@ -247,4 +264,11 @@ if __name__ == '__main__':
         time.sleep(1)
         waveshare_module.send_EPO_to_GPS()
 
-        print(f'NMEA string: {waveshare_module.get_wgs84_position()}')
+        position = None
+        while position is None:
+            position = waveshare_module.get_wgs84_position()
+            time.sleep(1)
+
+        print(f'NMEA string: {position}')
+        end_time = time.time()
+        print(f'Whole fix took: {end_time - start_time} seconds')
