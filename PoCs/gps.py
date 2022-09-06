@@ -96,120 +96,130 @@ def NmeaToDecimal_long(long_string, is_west):
 port = "/dev/ttyS0"
 baud = 115200
 
-
-# class Writer(asyncio.Protocol):
-#     def connection_made(self, transport):
-#         """Store the serial transport and schedule the task to send data.
-#         """
-#         self.transport = transport
-#         print('Writer connection created')
-#         asyncio.ensure_future(self.send())
-#         print('Writer.send() scheduled')
-
-#     def connection_lost(self, exc):
-#         print('Writer closed')
-
-#     async def send(self):
-#         """Send four newline-terminated messages, one byte at a time.
-#         """
-#         buffer = [
-# "AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",  # Set bearer parameter
-# "AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",   # Set bearer context
-# "AT+SAPBR=1,1",                           # Active bearer context
-# "AT+SAPBR=2,1"							  # Read bearer parameter
-# ]
-#         for message in buffer:
-#             await asyncio.sleep(0.5)
-#             bmessage = message.encode()
-#             self.transport.serial.write(bmessage)
-#             print(f'Writer sent: {bmessage}')
-#         self.transport.close()
-
-
-# class Reader(asyncio.Protocol):
-#     def connection_made(self, transport):
-#         """Store the serial transport and prepare to receive data.
-#         """
-#         self.transport = transport
-#         self.buf = bytes()
-#         self.msgs_recvd = 0
-#         print('Reader connection created')
-
-#     def data_received(self, data):
-#         """Store characters until a newline is received.
-#         """
-#         self.buf += data
-#         if b'\n' in self.buf:
-#             lines = self.buf.split(b'\n')
-#             self.buf = lines[-1]  # whatever was left over
-#             for line in lines[:-1]:
-#                 print(f'Reader received: {line.decode()}')
-#                 self.msgs_recvd += 1
-#         if self.msgs_recvd == 4:
-#             self.transport.close()
-
-#     def connection_lost(self, exc):
-#         print('Reader closed')
-
-
-# loop = asyncio.get_event_loop()
-# reader = serial_asyncio.create_serial_connection(loop, Reader, port, baudrate=baud)
-# writer = serial_asyncio.create_serial_connection(loop, Writer, port, baudrate=baud)
-# asyncio.ensure_future(reader)
-# print('Reader scheduled')
-# asyncio.ensure_future(writer)
-# print('Writer scheduled')
-# loop.call_later(10, loop.stop)
-# loop.run_forever()
-# print('Done')
-
-async def main(loop):
-    reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
-    print('Reader and writer created')
-    messages = [
+messages = [
 b"AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"\r\n",       # Set bearer parameter
 b"AT+SAPBR=3,1,\"APN\",\"internet\"\r\n",       # Set bearer context
 b"AT+SAPBR=1,1\r\n",                            # Active bearer context
 b"AT+SAPBR=2,1\r\n",							# Read bearer parameter
 b"AT+CNTPCID=1\r\n",                            # Set GPRS Bearer Profile's ID
-b"AT+CNTP=\"0.pl.pool.ntp.org\",1\r\n",         # set NTP server and time zone. they said that 32/4=8 which is Beijing. WTF?!
+b"AT+CNTP=\"0.pl.pool.ntp.org\",8\r\n",         # set NTP server and time zone. they said that 32/4=8 which is Beijing (GMT+8)
 b"AT+CNTP?\r\n",                                # read NTP server and timezone
 b"AT+CNTP\r\n",                                 # synchronize time
 b"AT+CCLK?\r\n",                                # read local time
 b"AT+CGNSSAV=3,3\r\n",                          # set HTTP download mode
-b"AT+HTTPINIT\r\n",                          # init HTTP service
-b"AT+HTTPPARA=\"CID\",1\r\n",                          # set parameters for HTTP transmission
+b"AT+HTTPINIT\r\n",                             # init HTTP service
+b"AT+HTTPPARA=\"CID\",1\r\n",                   # set parameters for HTTP transmission
 b"AT+HTTPPARA=\"URL\",\"http://wepodownload.mediatek.com/EPO_GPS_3_1.DAT\"\r\n",
-b"AT+HTTPACTION =\"CID\",1\r\n",                          # get session start. Should have 200 in the response
-b"AT+HTTPTERM\r\n",                          # terminate HTTP session
+b"AT+HTTPACTION =0\r\n",                        # get session start. Should have 200 in the response
+b"AT+HTTPTERM\r\n",                             # terminate HTTP session
 b"AT+CGNSCHK=3,1\r\n",                          # check EPO size
-b"AT+CGNSPWR=1\r\n",                          # turn on GPS
-b"AT+CGNSAID=31,1,1\r\n",                          # send EPO to GPS
-b"AT+CGNSINF\r\n"                          # read GPS location
+b"AT+CGNSPWR=1\r\n",                            # turn on GPS
+b"AT+CGNSAID=31,1,1\r\n",                       # send EPO to GPS
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
+b"AT+CGNSINF\r\n",                              # read GPS location
 ]
-    sent = send(writer, messages)
-    received = recv(reader)
-    await asyncio.wait([sent, received])
+
+sleeps = [
+2,
+3,
+20,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+30,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+5,
+]
 
 
-async def send(w, msgs):
-    for msg in msgs:
-        w.write(msg)
-        print(f'sent: {msg.decode().rstrip()}')
-        await asyncio.sleep(2)
-    w.write(b'DONE\n')
+len_msg = len(messages)
+len_sleeps = len(sleeps)
+
+if len_msg != len_sleeps:
+    print(f'len(messages) = {len_msg}')
+    print(f'len(sleeps) = {len_sleeps}')
+    exit(1)
+
+
+async def main():
+    asyncState = type('', (), {})()
+    asyncState.acknowledged = True
+    asyncState.receiving_finished = True
+    asyncState.done_sending = False
+    asyncState.counter = 0
+
+    reader, writer = await serial_asyncio.open_serial_connection(url=port, baudrate=115200)
+    print('Reader and writer created')
+    sent = send(writer, asyncState)
+    received = recv(reader, asyncState)
+    await asyncio.gather(sent, received)
+
+
+async def send(w, asyncState):
+    while True:
+        if asyncState.receiving_finished:
+            counter = asyncState.counter
+            if counter >= len(messages):
+                asyncState.done_sending = True
+                break
+            if asyncState.acknowledged:
+                asyncState.acknowledged = False
+
+            msg = messages[counter]
+            single_sleep = sleeps[counter]
+
+            w.write(msg)
+            asyncState.receiving_finished = False
+
+            print(f'sent{counter}: {msg.decode().rstrip()}')
+            await asyncio.sleep(single_sleep)
     print('Done sending')
 
 
-async def recv(r):
+async def recv(r, asyncState):
     while True:
         msg = await r.readuntil(b'\n')
-        if msg.rstrip() == b'DONE':
-            print('Done receiving')
+        msg_rstripped = msg.rstrip()
+
+        if asyncState.done_sending == True:
             break
-        print(f'received: {msg.rstrip().decode()}')
+        print(f'received{asyncState.counter}: {msg_rstripped.decode()}')
+        if b'OK' in msg_rstripped or b'ERROR' in msg_rstripped:
+            asyncState.receiving_finished = True
+            if b'OK' in msg_rstripped:
+                asyncState.acknowledged = True
+                asyncState.counter = asyncState.counter + 1
+    print('Done receiving')
+
 
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main(loop))
+loop.run_until_complete(main())
 loop.close()
